@@ -11,12 +11,13 @@ public class CNF {
 	private boolean [] assignation;
 
 	private int NB_VARS;
-	private int NB_CLAUSES;
+	public int NB_CLAUSES;
 
 
 
 	public CNF(String nomFic) {
 		lectureDimacs(nomFic);
+		System.out.println(this.NB_CLAUSES);
 	}
 
 
@@ -25,6 +26,7 @@ public class CNF {
 			Reader r = new FileReader(nomFic);
 			BufferedReader br = new BufferedReader(r);
 			String l = br.readLine();
+			System.out.println(l);
 			// tant que ligne de commentaires : avancer lecture
 			while(l.charAt(0)=='c')	{
 				l = br.readLine();
@@ -35,16 +37,19 @@ public class CNF {
 			l = br.readLine();
 			int k=0;
 			while(l != null) {
+				System.out.println(l);
 				gamma[k] = new Clause(lectureLigne(l));
 				k++;
+				System.out.println("ok");
 				l = br.readLine();
 			}
+			System.out.println(this.NB_VARS);
 
 		}
 		
 
 		catch(Exception e) {
-			System.exit(1);
+			System.out.println(e);
 		}
 
 	}
@@ -58,8 +63,9 @@ public class CNF {
 			sig=-1;
 			k++;
 		}
-		while(s.charAt(k)>=48 && s.charAt(k)<=57 && k!=s.length()) {
+		while(k!=s.length() && s.charAt(k)>=48 && s.charAt(k)<=57 ) {
 			val=10*val+(s.charAt(k)-48);
+			System.out.println("okkkkk");
 			k++;
 		}
 		return sig*val;
@@ -71,18 +77,23 @@ public class CNF {
 	public void lectureLignePCNF(String l) {	
 		int j=6;
 		this.NB_VARS=lireEntier(l,j);
+		System.out.println(this.NB_VARS);		
 		while(l.charAt(j)!=' ') {
 			j++;
 		}
 		j++;
+		System.out.println(j);
 		this.NB_CLAUSES=lireEntier(l,j);
+		System.out.println(this.NB_CLAUSES);
 	}
 
 	public int [] lectureLigne(String l) {
+		System.out.println(l.length());
 		int t [] = new int[l.length()-2];
 		int k=0;
 		int i=0;
 		while(l.charAt(i)!='0') {
+			System.out.println(l.charAt(i)+" "+k);
 			t[k]=lireEntier(l,i);
 			while(l.charAt(i)!=' ') {
 				i++;

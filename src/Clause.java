@@ -17,7 +17,7 @@ public class Clause {
 
 	public void setTaille(int [] t) {
 		int i=0;
-		while(t[i]!=0 || i!=t.length) {
+		while(i!=t.length && t[i]!=0) {
 			i++;
 		}
 		this.taille=i;

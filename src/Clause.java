@@ -5,9 +5,9 @@ import java.lang.Math;
 public class Clause {
 	
 	// Le tableau des litteraux de la clause
-	private int [] litteraux;
+	public int [] litteraux;
 	// Le nombre de litteraux de la clause
-	private int taille;
+	public int taille;
 
 
 	public Clause(int [] t) {

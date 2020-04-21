@@ -3,7 +3,7 @@
 
 */
 import java.io.*;
-
+import java.util.*;
 public class CNF {
 	
 	public Clause [] cl;
@@ -17,97 +17,41 @@ public class CNF {
 
 	public CNF(String nomFic) {
 		lectureDimacs(nomFic);
+		this.ass = new boolean[this.NB_VARS];
 	}
 
 
 	public void lectureDimacs(String nomFic) {
+		Scanner sc=null;
 		try {
-			Reader r = new FileReader(nomFic);
-			BufferedReader br = new BufferedReader(r);
-			String l = br.readLine();
-			// tant que ligne de commentaires : avancer lecture
-			while(l.charAt(0)=='c')	{
-				l = br.readLine();
-			}
-			lectureLignePCNF(l);
-			this.cl = new Clause[this.NB_CLAUSES];
-			this.ass = new boolean[this.NB_VARS];
-			this.lgClause = new int[this.NB_VARS];
-			l = br.readLine();
-			int k=0;
-			while(l != null) {
-				cl[k] = new Clause(lectureLigne(l));
-				lgClause[k]=cl[k].taille;
-				k++;
-				l = br.readLine();
-			}
-
+			FileInputStream fis = new FileInputStream(nomFic);
+			BufferedInputStream bis = new BufferedInputStream(fis);
+			sc = new Scanner(bis);
 		}
-		
-
 		catch(Exception e) {
 			System.out.println(e);
 		}
-
-	}
-
-	// lis un entier dans une chaine a partir d'une certaine position
-	public int lireEntier(String s, int i) {
-		int k=i;
-		int sig=1;
-		int val=0;
-		if(s.charAt(k)=='-') {
-			sig=-1;
-			k++;
-		}
-		while(k!=s.length() && s.charAt(k)>=48 && s.charAt(k)<=57 ) {
-			val=10*val+(s.charAt(k)-48);
-			k++;
-		}
-		return sig*val;
-	}
-
-
-
-
-	public void lectureLignePCNF(String l) {	
-		int j=6;
-		this.NB_VARS=lireEntier(l,j);		
-		while(l.charAt(j)!=' ') {
-			j++;
-		}
-		j++;
-		this.NB_CLAUSES=lireEntier(l,j);
-	}
-
-	public int [] lectureLigne(String l) {
-		int t [] = new int[l.length()-2];
-		int k=0;
-		int i=0;
-		while(l.charAt(i)!='0') {
-			t[k]=lireEntier(l,i);
-			while(l.charAt(i)!=' ') {
-				i++;
-			}
-			i++;
-			k++;
-		}
-		return t;
-	}
-
-	public void imprimerAssignation() {
-		int i=0;
-		while(i!=this.NB_VARS) {
-
-			if(this.ass[i]==false) {
-				System.out.print("-"+(i+1)+" ");
-			}
+		sc.findWithinHorizon("p cnf",0);
+		this.NB_VARS=sc.nextInt();
+		this.NB_CLAUSES=sc.nextInt();
+		this.cl = new Clause[this.NB_CLAUSES];
+        	int deb = 0;
+        	int j = 0;
+        	int fin = 0;
+        	int [] tab = new int[this.NB_VARS*this.NB_CLAUSES];
+        	for(int i = 0; sc.hasNextInt(); i++) {
+           		 tab[i] = sc.nextInt();
+            		if(tab[i]==0){
+                		this.cl[j] = new Clause(Arrays.copyOfRange(tab, deb, fin));
+                		deb = i+1;
+                		fin = deb;
+               			j++;
+            		} 
 			else {
-				System.out.print((i+1)+" ");
-			}
-			i++;
-		}
-		System.out.println("0");
+               			 fin++;
+           		}
+       		}
+		
 	}
 
 	public static int valAbs(int i) {
@@ -123,21 +67,6 @@ public class CNF {
 		return i<0;
 	}
 
-	/* renvoi vrai si la clause est valide */
-/*	public boolean valClause(int n_clause) {
-		int j=0;
-		boolean val=false;
-		while(j!=(this.cl[n_clause].taille) && !val) {
-			if(estNegatif(this.cl[n_clause].litteraux[j])) {
-				val = val | !(this.ass[valAbs(this.cl[n_clause].litteraux[j])-1]);
-			}
-			else {
-				val = val | (this.ass[valAbs(this.cl[n_clause].litteraux[j])-1]);
-			}
-			j++;
-		}
-		return val;
-	}*/
 	
 	public boolean valClause(Clause q) {
 		int j=0;
@@ -172,13 +101,40 @@ public class CNF {
 	// renvoi vrai si var est dans la clause c (negativement ou positivement)	
 	public boolean varEstDansClause(Clause c, int var) {
 		int i=0;
-		while(i!=c.taille & c.litteraux[i]!=var) {
+		while(i!=c.taille & valAbs(c.litteraux[i])!=valAbs(var)) {
 			i++;
 		}
 		return i!=c.taille;
 	}
-			 
 		
+	/* affiche l'assignation */	 
+	public void imprimerAssignation() {
+		int i=0;
+		while(i!=this.NB_VARS) {
+
+			if(this.ass[i]==false) {
+				System.out.print("-"+(i+1)+" ");
+			}
+			else {
+				System.out.print((i+1)+" ");
+			}
+			i++;
+		}
+		System.out.println("0");
+	}	
+	
+	public int nbClauseFausse() {
+		int nb=0;
+		int i=0;
+		while(i!=this.cl.length) {
+			if(!valClause(this.cl[i])) {
+				nb++;
+			}	
+			i++;
+		}
+		return nb;	
+	}
+				
 	
 
 

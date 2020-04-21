@@ -50,8 +50,23 @@ public class WalkSAT {
 		}
 	}		
 
+	public static Clause choisirClauseFausseAuHasard2(CNF c) {
+		int i;
+		i=(int)(Math.random()*c.nbClauseFausse());
+		int j=0;
+		int parc=0;
+		while(j!=i) {
+			while(!c.valClause(c.cl[parc])) {
+				parc++;
+			}
+			parc++;
+			j++;
+		}
+		return c.cl[parc];
+	}
+
 	public static int choixDeterministe(CNF c, Clause q) {
-		return MOMS(c,q);
+		return MIC(c,q);
 	}
 
 	/* retourne l'indice ou se trouve le maximum de N valeurs stochées dans un tableau */
@@ -69,8 +84,22 @@ public class WalkSAT {
 		return indice;
 	}
 
+	public static int minN(int t[]) {
+		int i=0;
+		int min=t[0];
+		int indice=0;
+		while(i!=t.length) {
+			if(min>t[i]) {
+				min=t[i];
+				indice=i;
+			}
+			i++;
+		}
+		return indice;
+	}
+
 	public static int MOMS(CNF c, Clause q) {
-		int [] t = new int[q.taille]; 
+		int [] t = new int[q.taille+1]; 
 		int i=0;
 		while(i!=q.taille) {
 			int j=0;
@@ -90,39 +119,76 @@ public class WalkSAT {
 		return Math.random();
 	}
 
-	/* main : implémentation de l'algo WalkSat */
-	public static void main(String args[]) {
-		WalkSAT ws = new WalkSAT(1.01,1000000, new CNF(args[0]));
+	public static int MIC(CNF c, Clause q) {
+		int i=0;
+		int [] t = new int[q.taille+1];
+		while(i!=q.taille) {
+			c.inverserValeur(q.litteraux[i]);
+			t[i]=c.nbClauseFausse();
+			c.inverserValeur(q.litteraux[i]);
+			i++;
+		}
+
+		return q.litteraux[minN(t)];
+	}
+
+
+	public void algoWalkSAT() {
 		int i,y;
 		double x;
 		Clause cfausse;
 		// choisir une assignation uniformément au hasard
-		assignationHasard(ws.gamma);
+		assignationHasard(this.gamma);
 		// ws.gamma.imprimerAssignation();
 		i=0;
 		// tant que v n'est pas modèle et i < MAX_ITERATION FAIRE
-		while(!estModele(ws.gamma) && i<ws.MAX_ITERATION) {
+
+		while(!estModele(this.gamma) && i<this.MAX_ITERATION) {
 			// choisir une clause fausse au hasard dans C
-			cfausse=choisirClauseFausseAuHasard(ws.gamma);
+			cfausse=choisirClauseFausseAuHasard2(this.gamma);
 			// tirer une valeur réelle uniformément au hasard
 			x=tirerValeurAuHasard();
 			// si x<=P
-			if(x<=ws.P) {
+			if(x<=this.P) {
 				y=cfausse.litteraux[(int)(Math.random()*(cfausse.taille))];
 			}
 			else {
-				y=choixDeterministe(ws.gamma,cfausse);
+				y=choixDeterministe(this.gamma,cfausse);
 			}
-			ws.gamma.inverserValeur(y);
+			this.gamma.inverserValeur(y);
+			/*if(i%10000==0) {
+				System.out.println(i/10000+"  "+this.gamma.nbClauseFausse());
+			} */
+			//System.out.println(i);
+
+
 			i++;
 		}
-		if(estModele(ws.gamma)) {
+		if(estModele(this.gamma)) {
 			System.out.println("SAT");
-			ws.gamma.imprimerAssignation();
+			this.gamma.imprimerAssignation();
 		}
 		else {
 			System.out.println("UNSAT");
 		}
 		
+	}		
+
+	public void setP(double p) {
+		this.P=p;
+	}
+	/* main : implémentation de l'algo WalkSat */
+	public static void main(String args[]) {
+		double d=0.01;
+//		WalkSAT ws = new WalkSAT(d,1000000, new CNF(args[0]));
+		while(d<=1.01) {
+		WalkSAT ws = new WalkSAT(d,1000000, new CNF(args[0]));
+			try { Thread.sleep(100); }
+			catch(Exception e) { System.out.println(e);}
+			System.out.println("P = "+d);		
+			ws.setP(d);
+			ws.algoWalkSAT();
+			d+=0.01;
+		}
 	}
 }

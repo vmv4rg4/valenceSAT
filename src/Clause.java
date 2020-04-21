@@ -17,7 +17,7 @@ public class Clause {
 
 	public void setTaille(int [] t) {
 		int i=0;
-		while(i!=t.length && t[i]!=0) {
+		while(i+1!=t.length && t[i+1]!=0) {
 			i++;
 		}
 		this.taille=i;
@@ -42,7 +42,14 @@ public class Clause {
 		return estDansClause(var);
 	}
 
-
+	public void afficherClause() {
+		int i=0;
+		while(i!=this.taille+1) {
+			System.out.print(litteraux[i]+" ");
+			i++;
+		}
+		System.out.println();
+	}
 
 
 }

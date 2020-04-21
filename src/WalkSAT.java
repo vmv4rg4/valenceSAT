@@ -30,28 +30,59 @@ public class WalkSAT {
 		int i=0;
 		boolean b = true;
 		while(i!=c.cl.length && b) {
-			b = b & c.valClause(i);
+			b = b & c.valClause(c.cl[i]);
 			i++;
 		}
 		return b;
 	}
 
-	public static int choisirClauseFausseAuHasard(CNF c) {
+	public static Clause choisirClauseFausseAuHasard(CNF c) {
 		int i;
-		i=(int)(Math.random()*c.NB_CLAUSES);
-		if(!c.valClause(i)) {
-			return i;
+		i=(int)(Math.random()*c.NB_CLAUSES-1.0);
+		if(!c.valClause(c.cl[i])) {
+			return c.cl[i];
 		}
 		else {
-			while(c.valClause(i)) {
-				i=(int)(Math.random()*c.NB_CLAUSES);				
+			while(c.valClause(c.cl[i])) {
+				i=(int)(Math.random()*c.NB_CLAUSES-1.0);				
 			}
-			return i;
+			return c.cl[i];
 		}
 	}		
 
-	public static int choixDeterministe() {
-		return 1;
+	public static int choixDeterministe(CNF c, Clause q) {
+		return MOMS(c,q);
+	}
+
+	/* retourne l'indice ou se trouve le maximum de N valeurs stochées dans un tableau */
+	public static int maxN(int t[]) {
+		int i=0;
+		int max=t[0];
+		int indice=0;
+		while(i!=t.length) {
+			if(max<t[i]) {
+				max=t[i];
+				indice=i;
+			}
+			i++;
+		}
+		return indice;
+	}
+
+	public static int MOMS(CNF c, Clause q) {
+		int [] t = new int[q.taille]; 
+		int i=0;
+		while(i!=q.taille) {
+			int j=0;
+			while(j!=c.NB_CLAUSES) {
+				if(c.varEstDansClause(c.cl[j],q.litteraux[i])) {
+					t[i]++;
+				}
+				j++;
+			}
+			i++;
+		}
+		return q.litteraux[maxN(t)];
 	}
 
 	/* tire une valeur au hasard entre 0 et 1 */
@@ -62,8 +93,9 @@ public class WalkSAT {
 	/* main : implémentation de l'algo WalkSat */
 	public static void main(String args[]) {
 		WalkSAT ws = new WalkSAT(1.01,1000000, new CNF(args[0]));
-		int i,cfausse,y;
+		int i,y;
 		double x;
+		Clause cfausse;
 		// choisir une assignation uniformément au hasard
 		assignationHasard(ws.gamma);
 		// ws.gamma.imprimerAssignation();
@@ -76,10 +108,10 @@ public class WalkSAT {
 			x=tirerValeurAuHasard();
 			// si x<=P
 			if(x<=ws.P) {
-				y=ws.gamma.cl[cfausse].litteraux[(int)(Math.random()*(ws.gamma.cl[cfausse].taille))];
+				y=cfausse.litteraux[(int)(Math.random()*(cfausse.taille))];
 			}
 			else {
-				y=choixDeterministe();
+				y=choixDeterministe(ws.gamma,cfausse);
 			}
 			ws.gamma.inverserValeur(y);
 			i++;

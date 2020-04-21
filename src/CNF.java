@@ -32,10 +32,12 @@ public class CNF {
 			lectureLignePCNF(l);
 			this.cl = new Clause[this.NB_CLAUSES];
 			this.ass = new boolean[this.NB_VARS];
+			this.lgClause = new int[this.NB_VARS];
 			l = br.readLine();
 			int k=0;
 			while(l != null) {
 				cl[k] = new Clause(lectureLigne(l));
+				lgClause[k]=cl[k].taille;
 				k++;
 				l = br.readLine();
 			}
@@ -122,7 +124,7 @@ public class CNF {
 	}
 
 	/* renvoi vrai si la clause est valide */
-	public boolean valClause(int n_clause) {
+/*	public boolean valClause(int n_clause) {
 		int j=0;
 		boolean val=false;
 		while(j!=(this.cl[n_clause].taille) && !val) {
@@ -135,22 +137,48 @@ public class CNF {
 			j++;
 		}
 		return val;
-	}
+	}*/
 	
+	public boolean valClause(Clause q) {
+		int j=0;
+		boolean val=false;
+		while(j!=q.taille && !val) {
+			if(estNegatif(q.litteraux[j])) {
+				val = val | !(this.ass[valAbs(q.litteraux[j])-1]);
+			}
+			else {
+				val = val | (this.ass[valAbs(q.litteraux[j])-1]);
+			}
+			j++;
+		}
+		return val;	
+	}
 	/* renvoi vrai si ass[] est modele de cl[] */	
 	public boolean estModele() {
 		int i=0;
 		boolean b = true;
 		while(i!=this.cl.length && b) {
-			b = b & valClause(i);
+			b = b & valClause(this.cl[i]);
 			i++;
 		}
 		return b;
 	}
 
+	// inverse la valeur de la variable i dans l'assignation de la CNF
 	public void inverserValeur(int i) {
 		this.ass[valAbs(i)-1]=!this.ass[valAbs(i)-1];
 	}
+
+	// renvoi vrai si var est dans la clause c (negativement ou positivement)	
+	public boolean varEstDansClause(Clause c, int var) {
+		int i=0;
+		while(i!=c.taille & c.litteraux[i]!=var) {
+			i++;
+		}
+		return i!=c.taille;
+	}
+			 
+		
 	
 
 
